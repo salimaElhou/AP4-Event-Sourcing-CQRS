@@ -9,14 +9,11 @@ import lombok.NoArgsConstructor;
 // la 1ere CMD
 public class CreditAccountCommand extends BaseCommand<String> {
     //pour cree acc
-    @Getter
-    private double amount;
-    @Getter
-    private  String currency;
-
-    public CreditAccountCommand(String id, double amount, String currency) {
+    @Getter private String currency;
+    @Getter private double amount;
+    public CreditAccountCommand(String id,String currency,double amount) {
         super(id);
-        this.amount = amount;
-        this.currency = currency;
+        this.amount=amount;
+        this.currency=currency;
     }
 }

@@ -1,18 +1,24 @@
 package elhou.salima.comptecqrseventsourcing.commands.aggregates;
 
+import elhou.salima.comptecqrseventsourcing.commoApi.Exceptions.InssuficientBalanceException;
+import elhou.salima.comptecqrseventsourcing.commoApi.Exceptions.InvalidAmountException;
 import elhou.salima.comptecqrseventsourcing.commoApi.commands.CreateAccountCommand;
+import elhou.salima.comptecqrseventsourcing.commoApi.commands.CreditAccountCommand;
+import elhou.salima.comptecqrseventsourcing.commoApi.commands.DebitAccountCommand;
 import elhou.salima.comptecqrseventsourcing.commoApi.enums.AccountState;
 import elhou.salima.comptecqrseventsourcing.commoApi.events.AccountActivatedEvent;
 import elhou.salima.comptecqrseventsourcing.commoApi.events.AccountCreatedEvent;
+import elhou.salima.comptecqrseventsourcing.commoApi.events.AccountCreditedEvent;
+import elhou.salima.comptecqrseventsourcing.commoApi.events.AccountDebitedEvent;
 import lombok.extern.slf4j.Slf4j;
+
 import org.axonframework.commandhandling.CommandHandler;
 import org.axonframework.eventsourcing.EventSourcingHandler;
 import org.axonframework.modelling.command.AggregateIdentifier;
 import org.axonframework.modelling.command.AggregateLifecycle;
 import org.axonframework.spring.stereotype.Aggregate;
-import org.springframework.beans.factory.annotation.Autowired;
 
-import java.util.UUID;
+import java.util.Date;
 
 @Aggregate
 @Slf4j
@@ -21,14 +27,11 @@ public class AccountAggregate {
     private String accountId;
     private double amount;
     private String currency;
-    private AccountState status;
+        private AccountState status;
 
-    //obligatoire constructure sans param
     public AccountAggregate() {
+
     }
-
-
-    //handler -> pour executer une cmd
     @CommandHandler
     public AccountAggregate(CreateAccountCommand createAccountCmd) {
         if (createAccountCmd.getAmount()<0) throw new  RuntimeException("impossible to create an account with a null balance!");
@@ -40,23 +43,53 @@ public class AccountAggregate {
         ));
 
     }
-//ON -> les changs dans l application
     @EventSourcingHandler
     public void on(AccountCreatedEvent event){
-        //les chanegements
         this.accountId=event.getId();
         this.amount =event.getAmount();
         this.currency=event.getCurrency();
         this.status=AccountState.CREATED;
-        AggregateLifecycle.apply(new AccountActivatedEvent(
-                event.getId(),
+        AggregateLifecycle.apply(new AccountActivatedEvent(event.getId(),
                 AccountState.ACTIVATED));
     }
-
-    // changer etat de application
     @EventSourcingHandler
     public void on(AccountActivatedEvent event){
         this.status=event.getStatus();
     }
+
+    @CommandHandler
+    public void handle(CreditAccountCommand creditAccountCmd) throws InvalidAmountException {
+        log.info("Attempting to credit amount: {}", creditAccountCmd.getAmount());
+        log.info("Attempting to credit with currency: {}", creditAccountCmd.getCurrency());
+        if (creditAccountCmd.getAmount()<=0) throw new InvalidAmountException("impossible to credit a negative amount!");
+        AggregateLifecycle.apply(new AccountCreditedEvent(
+                creditAccountCmd.getId(),
+                creditAccountCmd.getAmount(),
+                creditAccountCmd.getCurrency(),
+                new Date()
+        ));
+    }
+    @EventSourcingHandler
+    public void on(AccountCreditedEvent event){
+        this.amount+=event.getBalance();
+    }
+
+    @CommandHandler
+    public void handle(DebitAccountCommand debitAccountCmd) throws InssuficientBalanceException,InvalidAmountException{
+        if (debitAccountCmd.getAmount()<=0) throw new InvalidAmountException("impossible to credit a negative amount!");
+        if (debitAccountCmd.getAmount()>this.amount) throw new InssuficientBalanceException(" NO sufficient Balance Exception!! "+this.amount);
+        AggregateLifecycle.apply(new AccountDebitedEvent(
+                debitAccountCmd.getId(),
+                debitAccountCmd.getAmount(),
+                debitAccountCmd.getCurrency(),
+                new Date()
+        ));
+    }
+
+    @EventSourcingHandler
+    public void on(AccountDebitedEvent event){
+        this.amount-=event.getBalance();
+    }
+
 
 }

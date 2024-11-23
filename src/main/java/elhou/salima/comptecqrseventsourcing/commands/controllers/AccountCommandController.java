@@ -2,7 +2,11 @@ package elhou.salima.comptecqrseventsourcing.commands.controllers;
 
 
 import elhou.salima.comptecqrseventsourcing.commoApi.commands.CreateAccountCommand;
+import elhou.salima.comptecqrseventsourcing.commoApi.commands.CreditAccountCommand;
+import elhou.salima.comptecqrseventsourcing.commoApi.commands.DebitAccountCommand;
 import elhou.salima.comptecqrseventsourcing.commoApi.dtos.CreateAccountRequestDTO;
+import elhou.salima.comptecqrseventsourcing.commoApi.dtos.CreditAccountRequestDTO;
+import elhou.salima.comptecqrseventsourcing.commoApi.dtos.DebitAccountRequestDTO;
 import lombok.AllArgsConstructor;
 import org.axonframework.commandhandling.CommandBus;
 import org.axonframework.commandhandling.gateway.CommandGateway;
@@ -29,6 +33,28 @@ public class AccountCommandController {
         CompletableFuture<String> commandResponse = commandGateway.send(new CreateAccountCommand(
                 UUID.randomUUID().toString(),
                 request.getInitialBalance(),
+                request.getCurrency()
+        ));
+        return commandResponse;
+    }
+
+    //modifer l etat du compte MAJ
+    @PutMapping("/credit")
+    public CompletableFuture<String> creditAccount(@RequestBody CreditAccountRequestDTO request){
+        CompletableFuture<String> commandResponse=commandGateway.send(new CreditAccountCommand(
+                request.getAccountId(),
+                request.getCurrency(),
+                request.getInitialBalance()
+        ));
+        return commandResponse;
+    }
+
+
+    @PutMapping("/Debit")
+    public CompletableFuture<String> creditAccount(@RequestBody DebitAccountRequestDTO request) {
+        CompletableFuture<String> commandResponse=commandGateway.send(new DebitAccountCommand(
+                request.getAccountId(),
+                Double.parseDouble(String.valueOf(request.getInitialBalance())), // Conversion si nécessaire
                 request.getCurrency()
         ));
         return commandResponse;
