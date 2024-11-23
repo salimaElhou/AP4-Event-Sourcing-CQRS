@@ -48,11 +48,13 @@ Dans un système **CQRS** avec **Event Sourcing**, chaque changement d'état est
 Chaque événement est stocké de manière permanente dans l'Event Store, et l'état actuel du compte peut être reconstruit en rejouant ces événements dans l'ordre chronologique. Cela garantit l'historisation complète des changements de l’état, offrant ainsi un historique clair et immuable des actions effectuées sur le compte.
 <img src="captures/6V1.png">
 
-## part 2 Affichage de Données en Lecture (Query) :
-
-- La UI interroge le côté Query pour obtenir des informations à jour et les afficher. Avec l'Event Sourcing, ces informations sont généralement récupérées à partir d'une base de données de projection (une vue optimisée pour les requêtes de lecture).
-
 <img src="captures/1V2.png">
 <img src="captures/2V2.png">
 <img src="captures/3V2.png">
 <img src="captures/4V2.png">
+
+## part 2 Affichage de Données en Lecture (Query) :
+
+- La UI interroge le côté Query pour obtenir des informations à jour et les afficher. Avec l'Event Sourcing, ces informations sont généralement récupérées à partir d'une base de données de projection (une vue optimisée pour les requêtes de lecture).
+
+
