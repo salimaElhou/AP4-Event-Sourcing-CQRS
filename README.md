@@ -57,4 +57,12 @@ Chaque événement est stocké de manière permanente dans l'Event Store, et l'�
 
 - La UI interroge le côté Query pour obtenir des informations à jour et les afficher. Avec l'Event Sourcing, ces informations sont généralement récupérées à partir d'une base de données de projection (une vue optimisée pour les requêtes de lecture).
 
+<img src="captures/5V2.png">
 
+- ALL ACCOUNTS : 
+
+<img src="captures/6V2.png">
+
+- ACCOUNT BY ID :
+
+<img src="captures/7V2.png">
